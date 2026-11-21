@@ -1,0 +1,32 @@
+name: Sync README TODO List
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-todo-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 1
+
+      - name: Apply TODO section sync
+        run: python3 .github/scripts/update_todo_readme.py
+
+      - name: Commit synced README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- README.md; then
+            echo "README already up to date; nothing to commit."
+            exit 0
+          fi
+          git add README.md
+          git commit -m "docs(readme): sync Complete TODO List with dev code changes"
+          git push origin HEAD:dev
